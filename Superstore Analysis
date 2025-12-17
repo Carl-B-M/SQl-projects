@@ -1,0 +1,26 @@
+--SQL query that orders the items by price.
+SELECT item_name, category, price
+FROM superstore
+ORDER By price DESC -- Orders items by price from high to low
+;
+
+
+-- SQL query that will show a statistic about the item prices for each category and arrange them by highest to lowest average price
+SELECT category, item_name, AVG(price), MIN(price), MAX(price)
+FROM superstore
+GROUP By category --Groups items in a category to show the statisitcs for each
+ORDER BY AVG(price) DESC
+;
+
+
+--SQL query that will show a statistic about the price for items in the category of "Kitchen Supplies"
+SELECT category, AVG(price), MIN(price), MAX(price)
+FROM superstore
+WHERE category = "Kitchen Supplies"
+;
+
+-- SQL query that arranges each category by descending order of stock quantity
+SELECT category, item_name,price, stock_quantity
+FROM superstore
+ORDER By category, stock_quantity DESC
+;
