@@ -1,0 +1,136 @@
+
+--Q0 
+--used to find the column header information only
+SELECT*
+--,AVG(avg_employee_tenure) 
+--,AVG(maternity_leave_weeks)
+--,AVG(paid_time_off_days)
+
+FROM fortune_companies
+
+LIMIT 1
+;
+
+--Q1
+--Question: is there a correlation between employee tenure and revenue per employee?
+--Answer: Based on the data in this set there is no correlation.
+SELECT*, (revenue/employees) AS rev_per_employee
+FROM fortune_companies
+ORDER BY rev_per_employee DESC
+
+
+--Q2
+--Question: Which industry has the highest employee tenure by group average
+SELECT 
+industry
+,revenue
+--,avg_employee_tenure
+,ROUND(AVG(avg_employee_tenure),1) AS group_employee_tenure
+FROM fortune_companies
+GROUP BY industry
+ORDER BY group_employee_tenure DESC
+;
+
+
+--Q3
+--Question: What industies have above average benifits?
+SELECT 
+industry
+,healthcare_benefits
+, paid_time_off_days
+, maternity_leave_weeks
+FROM fortune_companies
+WHERE 
+maternity_leave_weeks >=( SELECT AVG(maternity_leave_weeks) FROM fortune_companies)
+AND
+paid_time_off_days >= (SELECT AVG(paid_time_off_days) FROM fortune_companies)
+AND 
+healthcare_benefits = 1
+
+GROUP BY industry
+
+;
+
+
+--Q4
+--Rank the pto and maternity leave by its distibution.
+SELECT 
+industry
+
+,(((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies)))as maternity_benefits_percentage
+
+,(((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies)))as pto_benefits_percentage
+
+
+, CASE
+WHEN 
+(((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies)))>80 THEN "Best"
+WHEN 
+(((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))) <=80 AND (((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))) >60 THEN "Above Average"
+WHEN 
+(((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))) <=60 AND (((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))) >40 THEN "Average"
+ELSE "Below Average"
+    END AS ranked_maternity_benefits
+    
+,CASE
+WHEN 
+    (((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies))) > 80 THEN "Best"
+WHEN 
+(((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies))) <= 80 
+AND 
+(((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies))) > 60 THEN "Above Average"
+
+WHEN 
+(((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies))) <= 60 
+AND 
+(((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies))) > 40 THEN "Average"
+    
+    ELSE "Below Average"
+    END AS ranked_pto_benefits
+    
+FROM fortune_companies
+;
+
+
+--Q5
+
+--Filter industries based on their having health benifits , ranked pto and maternity leave by its distibution.
+SELECT 
+industry
+
+,(((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies)))as maternity_benefits_percentage
+
+,(((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies)))as pto_benefits_percentage
+
+
+, CASE
+WHEN 
+(((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies)))>80 THEN "Best"
+WHEN 
+(((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))) <=80 AND (((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))) >60 THEN "Above Average"
+WHEN 
+(((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))) <=60 AND (((maternity_leave_weeks-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))*100)/((SELECT MAX(maternity_leave_weeks) FROM fortune_companies)-(SELECT MIN(maternity_leave_weeks) FROM fortune_companies))) >40 THEN "Average"
+ELSE "Below Average"
+    END AS ranked_maternity_benefits
+    
+,CASE
+WHEN 
+    (((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies))) > 80 THEN "Best"
+WHEN 
+(((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies))) <= 80 
+AND 
+(((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies))) > 60 THEN "Above Average"
+
+WHEN 
+(((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies))) <= 60 
+AND 
+(((paid_time_off_days-(SELECT MIN(paid_time_off_days) FROM fortune_companies))*100)/((SELECT MAX(paid_time_off_days) FROM fortune_companies)-(SELECT MIN(paid_time_off_days) FROM fortune_companies))) > 40 THEN "Average"
+    
+    ELSE "Below Average"
+    END AS ranked_pto_benefits
+ 
+,healthcare_benefits
+FROM fortune_companies
+GROUP BY industry
+Having maternity_benefits_percentage >40 AND pto_benefits_percentage >40 AND healthcare_benefits >0
+;
