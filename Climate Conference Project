@@ -1,0 +1,77 @@
+Climate Conference Project
+Database: https://www.db-fiddle.com/f/pxMci1sLL945KHKYvpe9W6/1
+
+
+--Q1
+-- Join multiple data tables to List the hotels the vips are staying at
+SELECT hotels.hotel_name, vips.last_name, vips.first_name
+FROM reservations
+LEFT JOIN vips
+ON reservations.member_id = vips.member_id
+JOIN hotels
+ON reservations.hotel = hotels.hotel_id
+ORDER BY hotels.hotel_name
+;
+
+
+
+--Q2
+-- Use Self Join and Join to list the members that are presenting and reviewing different events.
+SELECT vips_a.last_name AS reviewer,events.event_name,vips_b.last_name AS presenter
+FROM vips AS vips_a
+Join vips AS vips_b
+ON vips_a.member_id=vips_b.provides_feedback_to
+JOIN events
+ON vips_a.event=events.event_id
+ORDER BY vips_a.last_name
+;
+
+
+
+
+--Q3
+-- Joins two table to show the members that RSVPed to the welcome and dinner also calculates the years a person has been a member. 
+Select (2026-vips.member_since) AS Member_Years, vips.last_name, assoc_type, reservations.welcome_rsvp, reservations.dinner_rsvp
+FROM vips
+LEFT Join reservations
+ON vips.member_id = reservations.member_id
+ORDER BY reservations.welcome_rsvp DESC , reservations.dinner_rsvp DESC
+;
+
+
+--Q4
+--Shows the event, name of member, mebership type, years of membership and fillters for members who have been in the organization more than the average membership time.
+Select (2026-vips.member_since) AS Member_Years,vips.member_since, vips.last_name, vips.assoc_type, vips.association, events.event_name
+FROM vips
+LEFT Join events
+ON vips.event= events.event_id
+Where (2026-vips.member_since) > (SELECT AVG(2026-vips.member_since) From vips)
+;
+
+--Q5
+--  find the vips that have not booked a hotel for the event.
+SELECT hotels.hotel_name, vips.last_name, vips.first_name, vips.assoc_type
+FROM vips
+FULL JOIN reservations
+ON vips.member_id=reservations.member_id 
+FULL JOIN hotels
+ON reservations.hotel = hotels.hotel_id
+ORDER BY hotels.hotel_name
+;
+
+
+
+--Q6
+-- Use Self Join and Join to list the members that are presenting and reviewing different events that both have the same mebership association type.
+SELECT vips_a.last_name AS reviewer,vips_a.assoc_type,events.event_name,vips_b.last_name AS presenter,vips_b.assoc_type
+FROM vips AS vips_a
+Join vips AS vips_b
+ON vips_a.member_id=vips_b.provides_feedback_to
+JOIN events
+ON vips_a.event=events.event_id
+--WHERE vips_a.assoc_type LIKE '%gov%' AND vips_b.assoc_type LIKE"%gov%"
+WHERE vips_a.assoc_type = vips_b.assoc_type
+ORDER BY vips_a.last_name
+
+;
+
