@@ -1,0 +1,100 @@
+
+--Q1 How many many unique orders were placed in January? 
+SELECT COUNT(distinct BIT_DB.JanSales.orderID)
+FROM BIT_DB.JanSales
+;
+
+--Q2 How many of those orders were for an iPhone
+SELECT COUNT(distinct BIT_DB.JanSales.orderID)
+FROM BIT_DB.JanSales
+WHERE BIT_DB.JanSales.Product Like "%iphone%"
+;
+
+
+
+--Q3 Select the customer account numbers for all the orders that were placed in February
+SELECT  distinct BIT_DB.customers.acctnum
+FROM BIT_DB.FebSales
+INNER Join BIT_DB.customers
+ON BIT_DB.FebSales.orderID = BIT_DB.customers.order_id
+WHERE length(orderid) = 6
+AND orderid <> 'Order ID';
+
+
+--Q4 Which product was the cheapest one sold in January, and what was the price?
+SELECT MIN( BIT_DB.JanSales.price) as "loweat_price", BIT_DB.JanSales.Product
+FROM BIT_DB.JanSales
+;
+
+--Q5 What is the total revenue for each product sold in January?
+SELECT  BIT_DB.JanSales.Product, sum(Quantity) As total_sold, sum(Quantity)*price AS rev
+FROM BIT_DB.JanSales
+GROUP By BIT_DB.JanSales.Product
+
+;
+
+
+--Q6 Which products were sold in February at 548 Lincoln St, Seattle, WA 98101, how many of each were sold, and what was the total revenue?
+SELECT  BIT_DB.FebSales.location, product, Quantity, sum(Quantity)*price AS rev
+FROM BIT_DB.FebSales
+WHERE location LIKE "%548 Lincoln St, Seattle%"
+GROUP BY product
+;
+
+
+--Q7 How many customers ordered more than 2 products at a time in February, and what was the average amount spent for those customers?
+-- 3 answers below vv
+--                 vv
+--                 vv
+--               vvvvvvv
+--                vvvvv
+--                 vvv
+--                  v
+
+
+-- Answer A: this will return the results for any distinct customer that ordered more than 2 of a single product but wont account for clients that perchused more than two seperate products
+SELECT
+--count( cust.acctnum),
+count(distinct cust.acctnum),
+avg(quantity*price)
+FROM BIT_DB.FebSales Feb
+LEFT JOIN BIT_DB.customers cust
+ON Feb.orderid=cust.order_id
+WHERE Feb.Quantity>2
+AND length(orderid) = 6
+AND orderid <> 'Order ID';
+;
+
+
+--Answer B: this will group all of the clients that bought more than two of any product combined but shows them seperatly
+SELECT
+COUNT(distinct Cust.acctnum)
+,AVG(Feb.Quantity*Feb.price) as average_spent
+,SUM(Feb.Quantity)
+,COUNT(Feb.Product)
+From BIT_DB.FebSales Feb
+LEFT JOIN BIT_DB.customers Cust
+ON Feb.orderID = Cust.order_id
+GROUP BY Cust.acctnum 
+HAVING SUM(Feb.Quantity)>2 
+;
+
+
+-- Answer: this uses the results of answer B and returns the number of clients that bought more than 2 products in feb and returns the avergae price spent
+SELECT
+COUNT(distinct BIT_DB.customers.acctnum) AS Cust_with_more_than_two_items
+,AVG(BIT_DB.FebSales.Quantity*BIT_DB.FebSales.price) as average_spent
+,SUM(BIT_DB.FebSales.Quantity)
+
+FROM BIT_DB.FebSales
+LEFT JOIN BIT_DB.customers
+ON BIT_DB.FebSales.orderID = BIT_DB.customers.order_id
+
+WHERE BIT_DB.customers.acctnum IN 
+(SELECT distinct BIT_DB.customers.acctnum 
+FROM BIT_DB.FebSales
+LEFT JOIN BIT_DB.customers
+ON BIT_DB.FebSales.orderID = BIT_DB.customers.order_id
+GROUP BY BIT_DB.customers.acctnum
+HAVING SUM(BIT_DB.FebSales.Quantity)>2) 
+;
