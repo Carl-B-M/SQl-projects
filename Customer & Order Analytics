@@ -1,3 +1,5 @@
+-- These SQL codes are used for running queries on a database with two tables. they range from simple to moderate.
+
 
 --Q1 How many many unique orders were placed in January? 
 SELECT COUNT(distinct BIT_DB.JanSales.orderID)
@@ -97,4 +99,5 @@ LEFT JOIN BIT_DB.customers
 ON BIT_DB.FebSales.orderID = BIT_DB.customers.order_id
 GROUP BY BIT_DB.customers.acctnum
 HAVING SUM(BIT_DB.FebSales.Quantity)>2) 
+
 ;
